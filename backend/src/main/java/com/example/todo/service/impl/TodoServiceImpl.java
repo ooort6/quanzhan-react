@@ -54,4 +54,27 @@ public class TodoServiceImpl extends ServiceImpl<TodoMapper, Todo> implements To
         // 执行分页查询
         return this.page(page, queryWrapper);
     }
+
+    @Override
+    public boolean deleteTodo(Long id, String username) {
+        // 获取当前用户
+        User user = userService.getUserByUsername(username);
+        if (user == null) {
+            throw new RuntimeException("用户不存在");
+        }
+
+        // 查询待办事项是否存在
+        Todo todo = this.getById(id);
+        if (todo == null) {
+            throw new RuntimeException("待办事项不存在");
+        }
+
+        // 检查待办事项是否属于当前用户
+        if (!todo.getUserId().equals(user.getId())) {
+            throw new RuntimeException("无权限删除此待办事项");
+        }
+
+        // 删除待办事项
+        return this.removeById(id);
+    }
 }

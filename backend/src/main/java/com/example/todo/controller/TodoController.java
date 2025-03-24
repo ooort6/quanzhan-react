@@ -46,4 +46,16 @@ public class TodoController {
 
         return ResponseEntity.ok(response);
     }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Map<String, Object>> deleteTodo(@PathVariable Long id, Authentication authentication) {
+        boolean result = todoService.deleteTodo(id, authentication.getName());
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("code", 200);
+        response.put("message", "删除成功");
+        response.put("data", result);
+
+        return ResponseEntity.ok(response);
+    }
 }
