@@ -1,13 +1,15 @@
-import React, { useRef } from 'react';
-import { BrowserRouter, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
-import { Layout, Typography, Card } from 'antd';
-import TodoList from './components/TodoList';
-import TodoForm from './components/TodoForm';
+import React from 'react';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import Login from './components/Login';
 import Register from './components/Register';
-
-const { Header, Content } = Layout;
-const { Title } = Typography;
+import MainLayout from './components/MainLayout';
+import HomePage from './components/HomePage';
+import TodosPage from './components/TodosPage';
+import ProfilePage from './components/ProfilePage';
+import CalendarPage from './components/CalendarPage';
+import NotesPage from './components/NotesPage';
+import CategoriesPage from './components/CategoriesPage';
+import { useNavigate } from 'react-router-dom';
 
 // 受保护的路由，需要登录才能访问
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -20,46 +22,6 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
   }
 
   return <>{children}</>;
-};
-
-// 主界面组件
-const Dashboard: React.FC = () => {
-  const todoListRef = useRef<any>(null);
-  const navigate = useNavigate();
-
-  const handleTodoCreated = () => {
-    todoListRef.current?.fetchTodos();
-  };
-
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    navigate('/login');
-  };
-
-  return (
-    <Layout style={{ minHeight: '100vh' }}>
-      <Header style={{ background: '#fff', padding: '0 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <Title level={3} style={{ margin: '16px 0' }}>待办事项管理系统</Title>
-        <a
-          href="#"
-          onClick={(e) => {
-            e.preventDefault();
-            handleLogout();
-          }}
-        >
-          退出登录
-        </a>
-      </Header>
-      <Content style={{ padding: '20px' }}>
-        <Card title="新增待办事项" style={{ marginBottom: '20px' }}>
-          <TodoForm onSuccess={handleTodoCreated} />
-        </Card>
-        <Card title="待办事项列表">
-          <TodoList ref={todoListRef} />
-        </Card>
-      </Content>
-    </Layout>
-  );
 };
 
 // 登录成功后的处理函数
@@ -75,20 +37,92 @@ const LoginPage: React.FC = () => {
   return <Login onLoginSuccess={handleLoginSuccess} />;
 };
 
+// 主应用布局包装
+const MainLayoutWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  return (
+    <ProtectedRoute>
+      <MainLayout>
+        {children}
+      </MainLayout>
+    </ProtectedRoute>
+  );
+};
+
 const App: React.FC = () => {
   return (
     <BrowserRouter>
       <Routes>
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<Register />} />
+        
+        {/* 使用MainLayout的路由 */}
         <Route 
           path="/" 
           element={
-            <ProtectedRoute>
-              <Dashboard />
-            </ProtectedRoute>
+            <MainLayoutWrapper>
+              <HomePage />
+            </MainLayoutWrapper>
           } 
         />
+        <Route 
+          path="/todos" 
+          element={
+            <MainLayoutWrapper>
+              <TodosPage />
+            </MainLayoutWrapper>
+          } 
+        />
+        
+        {/* 个人信息页面 */}
+        <Route 
+          path="/profile" 
+          element={
+            <MainLayoutWrapper>
+              <ProfilePage />
+            </MainLayoutWrapper>
+          } 
+        />
+        
+        {/* 日程安排页面 */}
+        <Route 
+          path="/calendar" 
+          element={
+            <MainLayoutWrapper>
+              <CalendarPage />
+            </MainLayoutWrapper>
+          } 
+        />
+        
+        {/* 笔记管理页面 */}
+        <Route 
+          path="/notes" 
+          element={
+            <MainLayoutWrapper>
+              <NotesPage />
+            </MainLayoutWrapper>
+          } 
+        />
+        
+        {/* 分类管理页面 */}
+        <Route 
+          path="/categories" 
+          element={
+            <MainLayoutWrapper>
+              <CategoriesPage />
+            </MainLayoutWrapper>
+          } 
+        />
+        
+        <Route 
+          path="/settings" 
+          element={
+            <MainLayoutWrapper>
+              <div>系统设置页面 - 待开发</div>
+            </MainLayoutWrapper>
+          } 
+        />
+        
+        {/* 匹配任何未定义的路由，重定向到首页 */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>

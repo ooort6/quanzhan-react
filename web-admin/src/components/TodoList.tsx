@@ -1,9 +1,16 @@
 import React, { useEffect, useState, forwardRef, useImperativeHandle } from 'react';
-import { Table, Button, Space, message } from 'antd';
+import { Table, Button, Space, message, Tag, Badge, Typography, Empty } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
+import { CheckCircleOutlined, ClockCircleOutlined, DeleteOutlined, CheckOutlined, CloseOutlined } from '@ant-design/icons';
 import { Todo, todoService } from '../services/todoService';
 
-const TodoList = forwardRef((_, ref) => {
+const { Text } = Typography;
+
+interface TodoListProps {
+  filterCompleted?: boolean | null;
+}
+
+const TodoList = forwardRef(({ filterCompleted = null }: TodoListProps, ref) => {
   const [todos, setTodos] = useState<Todo[]>([]);
   const [loading, setLoading] = useState(false);
   const [pagination, setPagination] = useState({
@@ -16,7 +23,14 @@ const TodoList = forwardRef((_, ref) => {
     try {
       setLoading(true);
       const response = await todoService.getTodoList(page, size);
-      setTodos(response.data.records);
+      let filteredTodos = response.data.records;
+      
+      // 根据完成状态过滤任务
+      if (filterCompleted !== null) {
+        filteredTodos = filteredTodos.filter(todo => todo.completed === filterCompleted);
+      }
+      
+      setTodos(filteredTodos);
       setPagination({
         current: response.data.current,
         pageSize: response.data.size,
@@ -35,7 +49,7 @@ const TodoList = forwardRef((_, ref) => {
 
   useEffect(() => {
     fetchTodos();
-  }, []);
+  }, [filterCompleted]);
 
   const handleDelete = async (id: number) => {
     try {
@@ -50,7 +64,7 @@ const TodoList = forwardRef((_, ref) => {
   const handleToggleComplete = async (todo: Todo) => {
     try {
       await todoService.updateTodo(todo.id!, { completed: !todo.completed });
-      message.success('更新成功');
+      message.success(todo.completed ? '已标记为未完成' : '已标记为完成');
       fetchTodos(pagination.current, pagination.pageSize);
     } catch (error) {
       message.error('更新失败');
@@ -59,46 +73,94 @@ const TodoList = forwardRef((_, ref) => {
 
   const columns: ColumnsType<Todo> = [
     {
+      title: '状态',
+      dataIndex: 'completed',
+      key: 'completed',
+      width: 80,
+      align: 'center',
+      render: (completed: boolean) => (
+        completed ? 
+          <Badge status="success" text={<Tag icon={<CheckCircleOutlined />} color="success">已完成</Tag>} /> : 
+          <Badge status="processing" text={<Tag icon={<ClockCircleOutlined />} color="processing">待处理</Tag>} />
+      ),
+    },
+    {
       title: '标题',
       dataIndex: 'title',
       key: 'title',
+      render: (text: string, record: Todo) => (
+        <Text 
+          style={{ 
+            textDecoration: record.completed ? 'line-through' : 'none',
+            color: record.completed ? '#8c8c8c' : 'inherit',
+            fontWeight: 500
+          }}
+        >
+          {text}
+        </Text>
+      )
     },
     {
       title: '描述',
       dataIndex: 'description',
       key: 'description',
-    },
-    {
-      title: '状态',
-      dataIndex: 'completed',
-      key: 'completed',
-      render: (completed: boolean) => (
-        <span>{completed ? '已完成' : '未完成'}</span>
-      ),
+      render: (text: string, record: Todo) => (
+        <Text 
+          style={{ 
+            color: record.completed ? '#8c8c8c' : 'inherit',
+            textDecoration: record.completed ? 'line-through' : 'none',
+          }}
+        >
+          {text}
+        </Text>
+      )
     },
     {
       title: '创建时间',
       dataIndex: 'createTime',
       key: 'createTime',
+      width: 180,
     },
     {
       title: '操作',
       key: 'action',
+      width: 200,
       render: (_, record) => (
         <Space size="middle">
           <Button
             type={record.completed ? 'default' : 'primary'}
+            icon={record.completed ? <CloseOutlined /> : <CheckOutlined />}
+            size="small"
             onClick={() => handleToggleComplete(record)}
           >
             {record.completed ? '标记未完成' : '标记完成'}
           </Button>
-          <Button type="primary" danger onClick={() => handleDelete(record.id!)}>
+          <Button 
+            type="primary" 
+            danger 
+            icon={<DeleteOutlined />}
+            size="small"
+            onClick={() => handleDelete(record.id!)}
+          >
             删除
           </Button>
         </Space>
       ),
     },
   ];
+
+  const locale = {
+    emptyText: (
+      <Empty
+        image={Empty.PRESENTED_IMAGE_SIMPLE}
+        description={
+          <span>
+            暂无{filterCompleted === true ? '已完成' : filterCompleted === false ? '待处理' : ''}待办事项
+          </span>
+        }
+      />
+    )
+  };
 
   return (
     <div>
@@ -108,9 +170,16 @@ const TodoList = forwardRef((_, ref) => {
         rowKey="id"
         pagination={{
           ...pagination,
-          onChange: (page, pageSize) => fetchTodos(page, pageSize)
+          onChange: (page, pageSize) => fetchTodos(page, pageSize),
+          showSizeChanger: true,
+          showQuickJumper: true,
+          showTotal: (total) => `共 ${total} 项`,
         }}
         loading={loading}
+        locale={locale}
+        rowClassName={(record) => record.completed ? 'completed-row' : ''}
+        size="middle"
+        bordered={false}
       />
     </div>
   );
