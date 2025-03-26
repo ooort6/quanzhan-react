@@ -10,6 +10,7 @@ import com.example.todo.service.TodoService;
 import com.example.todo.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 @Service
 @RequiredArgsConstructor
@@ -36,7 +37,7 @@ public class TodoServiceImpl extends ServiceImpl<TodoMapper, Todo> implements To
     }
 
     @Override
-    public Page<Todo> getTodoList(Integer current, Integer size, String username) {
+    public Page<Todo> getTodoList(Integer current, Integer size, String keyword, String username) {
         // 获取当前用户
         User user = userService.getUserByUsername(username);
         if (user == null) {
@@ -49,6 +50,10 @@ public class TodoServiceImpl extends ServiceImpl<TodoMapper, Todo> implements To
         // 创建查询条件
         LambdaQueryWrapper<Todo> queryWrapper = new LambdaQueryWrapper<Todo>()
                 .eq(Todo::getUserId, user.getId())
+                .and(StringUtils.hasText(keyword), wrapper -> wrapper
+                        .like(Todo::getTitle, keyword)
+                        .or()
+                        .like(Todo::getDescription, keyword))
                 .orderByDesc(Todo::getCreateTime);
 
         // 执行分页查询
@@ -76,5 +81,33 @@ public class TodoServiceImpl extends ServiceImpl<TodoMapper, Todo> implements To
 
         // 删除待办事项
         return this.removeById(id);
+    }
+
+    @Override
+    public Todo updateTodo(Todo todo, String username) {
+        // 获取当前用户
+        User user = userService.getUserByUsername(username);
+        if (user == null) {
+            throw new RuntimeException("用户不存在");
+        }
+
+        // 查询待办事项是否存在
+        Todo existingTodo = this.getById(todo.getId());
+        if (existingTodo == null) {
+            throw new RuntimeException("待办事项不存在");
+        }
+
+        // 检查待办事项是否属于当前用户
+        if (!existingTodo.getUserId().equals(user.getId())) {
+            throw new RuntimeException("无权限修改此待办事项");
+        }
+
+        // 保留原有的用户ID和创建时间
+        todo.setUserId(existingTodo.getUserId());
+        todo.setCreateTime(existingTodo.getCreateTime());
+
+        // 更新待办事项
+        this.updateById(todo);
+        return todo;
     }
 }

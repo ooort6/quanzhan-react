@@ -46,6 +46,12 @@ const routes: Array<RouteRecordRaw> = [
         component: () => import("@/views/categories/index.vue"),
         meta: { title: "分类管理", icon: "Folder", requiresAuth: true },
       },
+      {
+        path: "todo",
+        name: "Todo",
+        component: () => import("@/views/todo/index.vue"),
+        meta: { title: "待办事项", icon: "List", requiresAuth: true },
+      },
     ],
   },
   {

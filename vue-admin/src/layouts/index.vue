@@ -6,36 +6,7 @@
         <h2 v-if="!isCollapse">Vue Admin</h2>
         <h2 v-else>VA</h2>
       </div>
-      <el-menu
-        :default-active="activeMenu"
-        class="el-menu-vertical"
-        :collapse="isCollapse"
-        background-color="#304156"
-        text-color="#bfcbd9"
-        active-text-color="#409EFF"
-        router
-      >
-        <el-menu-item index="/dashboard">
-          <el-icon><HomeFilled /></el-icon>
-          <span>控制台</span>
-        </el-menu-item>
-        <el-menu-item index="/profile">
-          <el-icon><User /></el-icon>
-          <span>个人信息</span>
-        </el-menu-item>
-        <el-menu-item index="/notes">
-          <el-icon><Document /></el-icon>
-          <span>笔记管理</span>
-        </el-menu-item>
-        <el-menu-item index="/calendar">
-          <el-icon><Calendar /></el-icon>
-          <span>日程安排</span>
-        </el-menu-item>
-        <el-menu-item index="/categories">
-          <el-icon><Folder /></el-icon>
-          <span>分类管理</span>
-        </el-menu-item>
-      </el-menu>
+      <Sidebar :is-collapse="isCollapse" />
     </el-aside>
 
     <el-container :class="['main-container', isCollapse ? 'is-collapse' : '']">
@@ -87,26 +58,16 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from "vue";
 import { useRouter, useRoute } from "vue-router";
-import {
-  HomeFilled,
-  User,
-  Document,
-  Calendar,
-  Folder,
-  Fold,
-  Expand,
-} from "@element-plus/icons-vue";
+import { Fold, Expand } from "@element-plus/icons-vue";
 import { useUserStore } from "@/stores/user";
+import Sidebar from "./components/Sidebar.vue";
+import Breadcrumb from "./components/Breadcrumb.vue";
 
 // 侧边栏收起状态
 const isCollapse = ref(false);
 const toggleSidebar = () => {
   isCollapse.value = !isCollapse.value;
 };
-
-// 获取当前激活的菜单
-const route = useRoute();
-const activeMenu = computed(() => route.path);
 
 // 用户信息
 const userStore = useUserStore();
@@ -159,10 +120,13 @@ onMounted(async () => {
   text-align: center;
   color: #fff;
   overflow: hidden;
+  background-color: #2b2f3a;
 }
 
-.el-menu-vertical:not(.el-menu--collapse) {
-  width: 220px;
+.aside .logo h2 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
 }
 
 .main-container {
@@ -199,7 +163,8 @@ onMounted(async () => {
 .toggle-icon {
   font-size: 20px;
   cursor: pointer;
-  margin-right: 20px;
+  margin-right: 15px;
+  color: #5a5e66;
 }
 
 .header-right {
@@ -215,15 +180,14 @@ onMounted(async () => {
 
 .username {
   margin-left: 8px;
+  font-size: 14px;
+  color: #5a5e66;
 }
 
 .main-content {
-  background-color: #f0f2f5;
-  padding: 20px;
   flex: 1;
-  width: 100%;
   overflow-y: auto;
-  box-sizing: border-box;
-  height: calc(100vh - 60px);
+  padding: 20px;
+  background-color: #f0f2f5;
 }
 </style>

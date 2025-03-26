@@ -7,7 +7,9 @@ import com.example.todo.entity.Todo;
 public interface TodoService extends IService<Todo> {
     Todo createTodo(Todo todo, String username);
 
-    Page<Todo> getTodoList(Integer current, Integer size, String username);
+    Page<Todo> getTodoList(Integer current, Integer size, String keyword, String username);
 
     boolean deleteTodo(Long id, String username);
+
+    Todo updateTodo(Todo todo, String username);
 }

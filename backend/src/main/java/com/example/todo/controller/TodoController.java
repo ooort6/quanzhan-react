@@ -36,8 +36,9 @@ public class TodoController {
     public ResponseEntity<Map<String, Object>> getTodoList(
             @RequestParam(defaultValue = "1") Integer current,
             @RequestParam(defaultValue = "10") Integer size,
+            @RequestParam(required = false) String keyword,
             Authentication authentication) {
-        Page<Todo> todoPage = todoService.getTodoList(current, size, authentication.getName());
+        Page<Todo> todoPage = todoService.getTodoList(current, size, keyword, authentication.getName());
 
         Map<String, Object> response = new HashMap<>();
         response.put("code", 200);
@@ -55,6 +56,20 @@ public class TodoController {
         response.put("code", 200);
         response.put("message", "删除成功");
         response.put("data", result);
+
+        return ResponseEntity.ok(response);
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<Map<String, Object>> updateTodo(@PathVariable Long id, @Valid @RequestBody Todo todo,
+            Authentication authentication) {
+        todo.setId(id);
+        Todo updatedTodo = todoService.updateTodo(todo, authentication.getName());
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("code", 200);
+        response.put("message", "更新成功");
+        response.put("data", updatedTodo);
 
         return ResponseEntity.ok(response);
     }
