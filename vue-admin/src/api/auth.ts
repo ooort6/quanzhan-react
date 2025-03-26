@@ -1,7 +1,18 @@
 import request from "@/utils/request";
 
+interface LoginParams {
+  username: string;
+  password: string;
+}
+
+interface RegisterParams {
+  username: string;
+  email: string;
+  password: string;
+}
+
 // 登录接口
-export function login(data: { username: string; password: string }) {
+export function login(data: LoginParams) {
   return request({
     url: "/api/auth/login",
     method: "post",
@@ -9,6 +20,15 @@ export function login(data: { username: string; password: string }) {
     headers: {
       "Content-Type": "application/json",
     },
+  });
+}
+
+// 注册接口
+export function register(data: RegisterParams) {
+  return request({
+    url: "/api/auth/register",
+    method: "post",
+    data,
   });
 }
 

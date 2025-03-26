@@ -11,6 +11,12 @@ const routes: Array<RouteRecordRaw> = [
     meta: { title: "登录", requiresAuth: false },
   },
   {
+    path: "/register",
+    name: "Register",
+    component: () => import("@/views/register/index.vue"),
+    meta: { title: "注册", requiresAuth: false },
+  },
+  {
     path: "/",
     name: "Layout",
     component: () => import("@/layouts/index.vue"),

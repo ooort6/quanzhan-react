@@ -1,13 +1,27 @@
 import { defineStore } from "pinia";
-import { login, getUserInfo, logout } from "@/api/auth";
+import { login, getUserInfo, logout, register } from "@/api/auth";
 import { ElMessage } from "element-plus";
 import router from "@/router";
+import { ref } from "vue";
 
 interface UserState {
   token: string;
   username: string;
   nickname: string;
   avatar: string;
+}
+
+interface UserInfo {
+  username: string;
+  email?: string;
+  avatar?: string;
+  roles?: string[];
+}
+
+interface RegisterParams {
+  username: string;
+  email: string;
+  password: string;
 }
 
 export const useUserStore = defineStore("user", {
@@ -76,6 +90,23 @@ export const useUserStore = defineStore("user", {
       this.nickname = "";
       this.avatar = "";
       localStorage.removeItem("token");
+    },
+
+    // 注册
+    async registerAction(params: RegisterParams): Promise<boolean> {
+      try {
+        const res = await register(params);
+        if (res.code === 200) {
+          ElMessage.success(res.message || "注册成功");
+          return true;
+        }
+        ElMessage.error(res.message || "注册失败");
+        return false;
+      } catch (error: any) {
+        console.error("注册失败:", error);
+        ElMessage.error(error.response?.data?.message || "注册失败，请重试");
+        return false;
+      }
     },
   },
 });
