@@ -9,52 +9,35 @@
       active-text-color="#409EFF"
       router
     >
-      <el-menu-item index="/dashboard">
-        <el-icon><HomeFilled /></el-icon>
-        <span>控制台</span>
-      </el-menu-item>
-
-      <el-menu-item index="/todo">
-        <el-icon><List /></el-icon>
-        <span>待办事项</span>
-      </el-menu-item>
-
-      <el-menu-item index="/notes">
-        <el-icon><Document /></el-icon>
-        <span>笔记管理</span>
-      </el-menu-item>
-
-      <el-menu-item index="/calendar">
-        <el-icon><Calendar /></el-icon>
-        <span>日程安排</span>
-      </el-menu-item>
-
-      <el-menu-item index="/categories">
-        <el-icon><Folder /></el-icon>
-        <span>分类管理</span>
-      </el-menu-item>
+      <template v-for="route in menuRoutes" :key="route.path">
+        <el-menu-item :index="'/' + route.path">
+          <el-icon><component :is="route.meta.icon" /></el-icon>
+          <span>{{ route.meta.title }}</span>
+        </el-menu-item>
+      </template>
     </el-menu>
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed } from "vue";
-import { useRoute } from "vue-router";
-import {
-  HomeFilled,
-  Document,
-  Calendar,
-  Folder,
-  List,
-} from "@element-plus/icons-vue";
+import { useRoute, useRouter } from "vue-router";
+import * as ElementPlusIconsVue from "@element-plus/icons-vue";
 
 const route = useRoute();
+const router = useRouter();
 const activeMenu = computed(() => route.path);
 
 // 从父组件接收折叠状态
 const props = defineProps<{
   isCollapse: boolean;
 }>();
+
+// 获取菜单路由
+const menuRoutes = computed(() => {
+  const mainRoute = router.options.routes.find((route) => route.path === "/");
+  return mainRoute?.children?.filter((route) => route.meta?.requiresAuth) || [];
+});
 </script>
 
 <style scoped>
