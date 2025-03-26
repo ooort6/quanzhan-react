@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from "vue-router";
 import type { RouteRecordRaw } from "vue-router";
 import NProgress from "nprogress";
 import "nprogress/nprogress.css";
+import { ChatDotRound } from "@element-plus/icons-vue";
 
 const routes: Array<RouteRecordRaw> = [
   {
@@ -51,6 +52,12 @@ const routes: Array<RouteRecordRaw> = [
         name: "Categories",
         component: () => import("@/views/categories/index.vue"),
         meta: { title: "分类管理", icon: "Folder", requiresAuth: true },
+      },
+      {
+        path: "ai-chat",
+        name: "AiChat",
+        component: () => import("@/views/ai-chat/index.vue"),
+        meta: { title: "AI助手", icon: "ChatDotRound", requiresAuth: true },
       },
       {
         path: "todo",
